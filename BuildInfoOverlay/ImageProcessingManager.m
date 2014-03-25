@@ -10,6 +10,17 @@
 #import <AppKit/AppKit.h>
 #import "SettingsManager.h"
 
+@interface ImageProcessingManager ()
+{
+    CGFloat _percentWidth;
+    CGFloat _percentHeight;
+}
+
+@end
+
+#define WIDTH_PERCENT(x) roundf(_percentWidth * (x))
+#define HEIGHT_PERCENT(x) roundf(_percentHeight * (x))
+
 @implementation ImageProcessingManager
 
 CWL_SYNTHESIZE_SINGLETON_FOR_CLASS(ImageProcessingManager);
@@ -26,6 +37,12 @@ CWL_SYNTHESIZE_SINGLETON_FOR_CLASS(ImageProcessingManager);
     [self saveImage:sourceImage withName:@"icon_iOS7@2x.png" andSize:NSMakeSize(152, 152)];
 }
 
+- (void)calculateSizesPercentsForImage:(NSImage*)image
+{
+    _percentWidth = image.size.width/100.f;
+    _percentHeight = image.size.height/100.f;
+}
+
 - (NSImage*)preparedTargetImage:(NSImage*)source
 {
     NSString *version = [[SettingsManager sharedSettingsManager] version];
@@ -35,23 +52,17 @@ CWL_SYNTHESIZE_SINGLETON_FOR_CLASS(ImageProcessingManager);
     
     [image lockFocus];
     
-    NSInteger realWidth = image.size.width;
-    NSInteger realHeight = image.size.height;
-    
-    [image setSize:NSMakeSize(realWidth, realHeight)];
-    
-    CGFloat percentWidth = realWidth/100.f;
-    CGFloat percentHeight = realHeight/100.f;
+    [self calculateSizesPercentsForImage:image];
     
     //Draw version
     NSDictionary *versionAttributesDictionary = @{
                                                   NSForegroundColorAttributeName : [NSColor whiteColor],
-                                                  NSFontAttributeName : [NSFont systemFontOfSize:percentHeight*10]
+                                                  NSFontAttributeName : [NSFont systemFontOfSize:HEIGHT_PERCENT(10)]
                                                   };
     
-    NSRect versionBoundRect = [version boundingRectWithSize:NSMakeSize(percentWidth*100, percentHeight*15) options:NSStringDrawingDisableScreenFontSubstitution attributes:versionAttributesDictionary];
-    versionBoundRect.origin.x = percentWidth*90 - versionBoundRect.size.width;
-    versionBoundRect.origin.y = percentHeight*88;
+    NSRect versionBoundRect = [version boundingRectWithSize:NSMakeSize( WIDTH_PERCENT(100) , HEIGHT_PERCENT(15) ) options:NSStringDrawingDisableScreenFontSubstitution attributes:versionAttributesDictionary];
+    versionBoundRect.origin.x = WIDTH_PERCENT(90) - versionBoundRect.size.width;
+    versionBoundRect.origin.y = HEIGHT_PERCENT(85);
     
     [version drawWithRect:versionBoundRect options:NSStringDrawingDisableScreenFontSubstitution attributes:versionAttributesDictionary];
     
@@ -62,14 +73,14 @@ CWL_SYNTHESIZE_SINGLETON_FOR_CLASS(ImageProcessingManager);
     
     NSDictionary *buildTypeAttributedDictionary = @{
                                                     NSForegroundColorAttributeName : [NSColor redColor],
-                                                    NSFontAttributeName : [NSFont boldSystemFontOfSize:percentHeight*20],
+                                                    NSFontAttributeName : [NSFont boldSystemFontOfSize:HEIGHT_PERCENT(20)],
                                                     NSParagraphStyleAttributeName : paragrapStyle
                                                     };
     
-    NSRect buildTypeBoundRect = [version boundingRectWithSize:NSMakeSize(percentWidth*100, percentHeight*25) options:NSStringDrawingDisableScreenFontSubstitution attributes:buildTypeAttributedDictionary];
+    NSRect buildTypeBoundRect = [version boundingRectWithSize:NSMakeSize( WIDTH_PERCENT(100) , HEIGHT_PERCENT(25) ) options:NSStringDrawingDisableScreenFontSubstitution attributes:buildTypeAttributedDictionary];
     buildTypeBoundRect.origin.x = 0;
-    buildTypeBoundRect.origin.y = percentHeight*10;
-    buildTypeBoundRect.size.width = percentWidth*100;
+    buildTypeBoundRect.origin.y = HEIGHT_PERCENT(10);
+    buildTypeBoundRect.size.width = WIDTH_PERCENT(100);
     
     [buildType drawWithRect:buildTypeBoundRect options:NSStringDrawingUsesDeviceMetrics attributes:buildTypeAttributedDictionary];
     
