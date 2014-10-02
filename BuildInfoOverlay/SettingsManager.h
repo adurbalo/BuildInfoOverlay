@@ -9,15 +9,15 @@
 #import <Foundation/Foundation.h>
 #import "CWLSynthesizeSingleton.h"
 
-static NSString * const kVersionArgumentKey     = @"--version:";
-static NSString * const kVersionTextColorArgumentKey     = @"--versionTextColor:";
-static NSString * const kBuildTypeArgumentKey   = @"--buildType:";
-static NSString * const kBuildTypeTextColorArgumentKey   = @"--buildTypeTextColor:";
-static NSString * const kSourceImagePathKey     = @"--sourceImagePath:";
-static NSString * const kTargetDirPathKey       = @"--targetDirPath:";
-static NSString * const kOutputImageNameKey     = @"--outputImageName:";
-static NSString * const kOutputImageWidthKey    = @"--outputImageWidth:";
-static NSString * const kOutputImageHeightKey   = @"--outputImageHeight:";
+static NSString * const kVersionArgumentKey             = @"--version:";
+static NSString * const kVersionTextColorArgumentKey    = @"--versionTextColor:";
+static NSString * const kBuildTypeArgumentKey           = @"--buildType:";
+static NSString * const kBuildTypeTextColorArgumentKey  = @"--buildTypeTextColor:";
+static NSString * const kSourceImagePathKey             = @"--sourceImagePath:";
+static NSString * const kTargetDirPathKey               = @"--targetDirPath:";
+static NSString * const kOutputImageNameKey             = @"--outputImageName:";
+static NSString * const kOutputImageWidthKey            = @"--outputImageWidth:";
+static NSString * const kOutputImageHeightKey           = @"--outputImageHeight:";
 
 @interface SettingsManager : NSObject
 

@@ -48,18 +48,6 @@ CWL_SYNTHESIZE_SINGLETON_FOR_CLASS(ImageProcessingManager);
     NSImage *sourceImage = [[NSImage alloc] initWithContentsOfFile:settingsManager.sourceImagePath];
     
     [self saveImage:sourceImage withName:settingsManager.outputImageName andSize:NSMakeSize([settingsManager.outputImageWidth floatValue], [settingsManager.outputImageHeight floatValue])];
-    
-//    [self saveImage:sourceImage withName:@"icon_settings.png" andSize:NSMakeSize(29, 29)];
-//    [self saveImage:sourceImage withName:@"icon_settings@2x.png" andSize:NSMakeSize(58, 58)];
-//    
-//    [self saveImage:sourceImage withName:@"icon_spotlite.png" andSize:NSMakeSize(40, 40)];
-//    [self saveImage:sourceImage withName:@"icon_spotlite@2.png" andSize:NSMakeSize(80, 80)];
-//    
-//    [self saveImage:sourceImage withName:@"icon.png" andSize:NSMakeSize(72, 72)];
-//    [self saveImage:sourceImage withName:@"icon@2x.png" andSize:NSMakeSize(144, 144)];
-//    
-//    [self saveImage:sourceImage withName:@"icon_iOS7.png" andSize:NSMakeSize(76, 76)];
-//    [self saveImage:sourceImage withName:@"icon_iOS7@2x.png" andSize:NSMakeSize(152, 152)];
 }
 
 - (void)calculateSizesPercentsForImage:(NSImage*)image
