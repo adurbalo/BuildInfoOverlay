@@ -35,10 +35,15 @@ CWL_SYNTHESIZE_SINGLETON_FOR_CLASS(SettingsManager);
     }
     
     self.version = [self argsArray:argsArray popArgumentForKey:kVersionArgumentKey];
+    self.versionTextColor = [self argsArray:argsArray popArgumentForKey:kVersionTextColorArgumentKey];
     self.buildType = [self argsArray:argsArray popArgumentForKey:kBuildTypeArgumentKey];
-    self.sourceImagePath = [self argsArray:argsArray popArgumentForKey:kSourceImagePath];
-    self.targetDirPath = [self argsArray:argsArray popArgumentForKey:kTargetDirPath];
-   
+    self.buildTypeTextColor = [self argsArray:argsArray popArgumentForKey:kBuildTypeTextColorArgumentKey];
+    self.sourceImagePath = [self argsArray:argsArray popArgumentForKey:kSourceImagePathKey];
+    self.targetDirPath = [self argsArray:argsArray popArgumentForKey:kTargetDirPathKey];
+    self.outputImageName = [self argsArray:argsArray popArgumentForKey:kOutputImageNameKey];
+    self.outputImageWidth = [self argsArray:argsArray popArgumentForKey:kOutputImageWidthKey];
+    self.outputImageHeight = [self argsArray:argsArray popArgumentForKey:kOutputImageHeightKey];
+    
     if ( argsArray.count ){
         NSLog(@"Unexpected parameters: %@", argsArray);
         return NO;

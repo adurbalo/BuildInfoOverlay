@@ -25,23 +25,41 @@
 
 CWL_SYNTHESIZE_SINGLETON_FOR_CLASS(ImageProcessingManager);
 
++ (NSColor *)colorFromHexadecimalValue:(NSString *)hex {
+    
+    if ([hex hasPrefix:@"#"]) {
+        hex = [hex substringWithRange:NSMakeRange(1, [hex length] - 1)];
+    }
+    
+    unsigned int colorCode = 0;
+    
+    if (hex) {
+        NSScanner *scanner = [NSScanner scannerWithString:hex];
+        (void)[scanner scanHexInt:&colorCode];
+    }
+    
+    return [NSColor colorWithDeviceRed:((colorCode>>16)&0xFF)/255.0 green:((colorCode>>8)&0xFF)/255.0 blue:((colorCode)&0xFF)/255.0 alpha:1.0];
+}
+
 - (void)generateImages
 {
-    NSString *imagePath = [[SettingsManager sharedSettingsManager] sourceImagePath];
+    SettingsManager *settingsManager = [SettingsManager sharedSettingsManager];
     
-    NSImage *sourceImage = [[NSImage alloc] initWithContentsOfFile:imagePath];
+    NSImage *sourceImage = [[NSImage alloc] initWithContentsOfFile:settingsManager.sourceImagePath];
     
-    [self saveImage:sourceImage withName:@"icon_settings.png" andSize:NSMakeSize(29, 29)];
-    [self saveImage:sourceImage withName:@"icon_settings@2x.png" andSize:NSMakeSize(58, 58)];
+    [self saveImage:sourceImage withName:settingsManager.outputImageName andSize:NSMakeSize([settingsManager.outputImageWidth floatValue], [settingsManager.outputImageHeight floatValue])];
     
-    [self saveImage:sourceImage withName:@"icon_spotlite.png" andSize:NSMakeSize(40, 40)];
-    [self saveImage:sourceImage withName:@"icon_spotlite@2.png" andSize:NSMakeSize(80, 80)];
-    
-    [self saveImage:sourceImage withName:@"icon.png" andSize:NSMakeSize(72, 72)];
-    [self saveImage:sourceImage withName:@"icon@2x.png" andSize:NSMakeSize(144, 144)];
-    
-    [self saveImage:sourceImage withName:@"icon_iOS7.png" andSize:NSMakeSize(76, 76)];
-    [self saveImage:sourceImage withName:@"icon_iOS7@2x.png" andSize:NSMakeSize(152, 152)];
+//    [self saveImage:sourceImage withName:@"icon_settings.png" andSize:NSMakeSize(29, 29)];
+//    [self saveImage:sourceImage withName:@"icon_settings@2x.png" andSize:NSMakeSize(58, 58)];
+//    
+//    [self saveImage:sourceImage withName:@"icon_spotlite.png" andSize:NSMakeSize(40, 40)];
+//    [self saveImage:sourceImage withName:@"icon_spotlite@2.png" andSize:NSMakeSize(80, 80)];
+//    
+//    [self saveImage:sourceImage withName:@"icon.png" andSize:NSMakeSize(72, 72)];
+//    [self saveImage:sourceImage withName:@"icon@2x.png" andSize:NSMakeSize(144, 144)];
+//    
+//    [self saveImage:sourceImage withName:@"icon_iOS7.png" andSize:NSMakeSize(76, 76)];
+//    [self saveImage:sourceImage withName:@"icon_iOS7@2x.png" andSize:NSMakeSize(152, 152)];
 }
 
 - (void)calculateSizesPercentsForImage:(NSImage*)image
@@ -61,9 +79,14 @@ CWL_SYNTHESIZE_SINGLETON_FOR_CLASS(ImageProcessingManager);
     
     [self calculateSizesPercentsForImage:image];
     
+    NSColor *versionTextColor = [ImageProcessingManager colorFromHexadecimalValue:[[SettingsManager sharedSettingsManager] versionTextColor]];
+    if (!versionTextColor) {
+        versionTextColor = [NSColor whiteColor];
+    }
+    
     //Draw version
     NSDictionary *versionAttributesDictionary = @{
-                                                  NSForegroundColorAttributeName : [NSColor whiteColor],
+                                                  NSForegroundColorAttributeName : versionTextColor,
                                                   NSFontAttributeName : [NSFont systemFontOfSize:HEIGHT_PERCENT(10)]
                                                   };
     
@@ -78,8 +101,13 @@ CWL_SYNTHESIZE_SINGLETON_FOR_CLASS(ImageProcessingManager);
     NSMutableParagraphStyle *paragrapStyle = [[NSMutableParagraphStyle alloc] init];
     paragrapStyle.alignment = NSCenterTextAlignment;
     
+    NSColor *buildTypeTextColor = [ImageProcessingManager colorFromHexadecimalValue:[[SettingsManager sharedSettingsManager] buildTypeTextColor]];
+    if (!buildTypeTextColor) {
+        buildTypeTextColor = [NSColor redColor];
+    }
+    
     NSDictionary *buildTypeAttributedDictionary = @{
-                                                    NSForegroundColorAttributeName : [NSColor redColor],
+                                                    NSForegroundColorAttributeName : buildTypeTextColor,
                                                     NSFontAttributeName : [NSFont boldSystemFontOfSize:HEIGHT_PERCENT(20)],
                                                     NSParagraphStyleAttributeName : paragrapStyle
                                                     };
