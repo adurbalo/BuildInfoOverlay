@@ -79,10 +79,10 @@ CWL_SYNTHESIZE_SINGLETON_FOR_CLASS(ImageProcessingManager);
                                                   };
     
     NSRect versionBoundRect = [version boundingRectWithSize:NSMakeSize( WIDTH_PERCENT(100) , HEIGHT_PERCENT(15) ) options:NSStringDrawingDisableScreenFontSubstitution attributes:versionAttributesDictionary];
-    versionBoundRect.origin.x = WIDTH_PERCENT(90) - versionBoundRect.size.width;
+    versionBoundRect.origin.x = WIDTH_PERCENT(10); // For central position use this code -> (WIDTH_PERCENT(100) - versionBoundRect.size.width)/2;
     versionBoundRect.origin.y = HEIGHT_PERCENT(85);
     
-    [version drawWithRect:versionBoundRect options:NSStringDrawingDisableScreenFontSubstitution attributes:versionAttributesDictionary];
+    [version drawWithRect:versionBoundRect options:NSStringDrawingDisableScreenFontSubstitution attributes:versionAttributesDictionary context:nil];
     
     
     //Draw build type
@@ -105,7 +105,7 @@ CWL_SYNTHESIZE_SINGLETON_FOR_CLASS(ImageProcessingManager);
     buildTypeBoundRect.origin.y = HEIGHT_PERCENT(10);
     buildTypeBoundRect.size.width = WIDTH_PERCENT(100);
     
-    [buildType drawWithRect:buildTypeBoundRect options:NSStringDrawingUsesDeviceMetrics attributes:buildTypeAttributedDictionary];
+    [buildType drawWithRect:buildTypeBoundRect options:NSStringDrawingUsesDeviceMetrics attributes:buildTypeAttributedDictionary context:nil];
     
     
     [image unlockFocus];
@@ -140,7 +140,8 @@ CWL_SYNTHESIZE_SINGLETON_FOR_CLASS(ImageProcessingManager);
 
     NSData *imageData = [sourceImage TIFFRepresentation];
     NSBitmapImageRep *imageRep = [NSBitmapImageRep imageRepWithData:imageData];
-    imageData = [imageRep representationUsingType:NSPNGFileType properties:nil];
+    NSDictionary *properties = @{@(1.0) : NSImageCompressionFactor};
+    imageData = [imageRep representationUsingType:NSPNGFileType properties:properties];
     
     NSString *targetDirPath = [[SettingsManager sharedSettingsManager] targetDirPath];
     
