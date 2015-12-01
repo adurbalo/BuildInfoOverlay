@@ -102,7 +102,7 @@ CWL_SYNTHESIZE_SINGLETON_FOR_CLASS(ImageProcessingManager);
     
     NSRect buildTypeBoundRect = [version boundingRectWithSize:NSMakeSize( WIDTH_PERCENT(100) , HEIGHT_PERCENT(25) ) options:NSStringDrawingDisableScreenFontSubstitution attributes:buildTypeAttributedDictionary];
     buildTypeBoundRect.origin.x = 0;
-    buildTypeBoundRect.origin.y = HEIGHT_PERCENT(10);
+    buildTypeBoundRect.origin.y = HEIGHT_PERCENT(5);
     buildTypeBoundRect.size.width = WIDTH_PERCENT(100);
     
     [buildType drawWithRect:buildTypeBoundRect options:NSStringDrawingUsesDeviceMetrics attributes:buildTypeAttributedDictionary context:nil];
