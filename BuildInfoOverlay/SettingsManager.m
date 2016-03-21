@@ -43,6 +43,7 @@ CWL_SYNTHESIZE_SINGLETON_FOR_CLASS(SettingsManager);
     self.outputImageName = [self argsArray:argsArray popArgumentForKey:kOutputImageNameKey];
     self.outputImageWidth = [self argsArray:argsArray popArgumentForKey:kOutputImageWidthKey];
     self.outputImageHeight = [self argsArray:argsArray popArgumentForKey:kOutputImageHeightKey];
+    self.buildTypePositionCenter = [[self argsArray:argsArray popArgumentForKey:kBuildTypePositionCenterKey] boolValue];
     
     if ( argsArray.count ){
         NSLog(@"Unexpected parameters: %@", argsArray);

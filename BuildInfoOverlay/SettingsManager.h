@@ -18,6 +18,7 @@ static NSString * const kTargetDirPathKey               = @"--targetDirPath:";
 static NSString * const kOutputImageNameKey             = @"--outputImageName:";
 static NSString * const kOutputImageWidthKey            = @"--outputImageWidth:";
 static NSString * const kOutputImageHeightKey           = @"--outputImageHeight:";
+static NSString * const kBuildTypePositionCenterKey     = @"--buildTypePositionCenter:";
 
 @interface SettingsManager : NSObject
 
@@ -30,6 +31,7 @@ static NSString * const kOutputImageHeightKey           = @"--outputImageHeight:
 @property (nonatomic, strong) NSString *outputImageName;
 @property (nonatomic, strong) NSString *outputImageWidth;
 @property (nonatomic, strong) NSString *outputImageHeight;
+@property (nonatomic) BOOL buildTypePositionCenter;
 @property (nonatomic, strong) NSString *applicationPath;
 
 CWL_DECLARE_SINGLETON_FOR_CLASS(SettingsManager);

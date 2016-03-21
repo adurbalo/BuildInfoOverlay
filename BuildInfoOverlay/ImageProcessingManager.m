@@ -100,13 +100,32 @@ CWL_SYNTHESIZE_SINGLETON_FOR_CLASS(ImageProcessingManager);
                                                     NSParagraphStyleAttributeName : paragrapStyle
                                                     };
     
-    NSRect buildTypeBoundRect = [version boundingRectWithSize:NSMakeSize( WIDTH_PERCENT(100) , HEIGHT_PERCENT(25) ) options:NSStringDrawingDisableScreenFontSubstitution attributes:buildTypeAttributedDictionary];
-    buildTypeBoundRect.origin.x = 0;
-    buildTypeBoundRect.origin.y = HEIGHT_PERCENT(5);
-    buildTypeBoundRect.size.width = WIDTH_PERCENT(100);
-    
-    [buildType drawWithRect:buildTypeBoundRect options:NSStringDrawingUsesDeviceMetrics attributes:buildTypeAttributedDictionary context:nil];
-    
+    if ([[SettingsManager sharedSettingsManager] buildTypePositionCenter]) {
+        
+        NSMutableParagraphStyle *style = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
+        style.alignment = NSTextAlignmentCenter;
+        style.lineBreakMode = NSLineBreakByWordWrapping;
+        
+        NSMutableDictionary *attr = [NSMutableDictionary dictionaryWithDictionary:buildTypeAttributedDictionary];
+        [attr setObject:style forKey:NSParagraphStyleAttributeName];
+        
+        NSRect textRect = [buildType boundingRectWithSize:NSMakeSize( WIDTH_PERCENT(100) , HEIGHT_PERCENT(100) )
+                                                  options:NSStringDrawingUsesLineFragmentOrigin
+                                               attributes:attr];
+        textRect.origin.x = 0;
+        textRect.size.width = WIDTH_PERCENT(100);
+        textRect.origin.y = 0;
+        
+        [buildType drawInRect:textRect withAttributes:attr];
+        
+    } else {
+        NSRect buildTypeBoundRect = [version boundingRectWithSize:NSMakeSize( WIDTH_PERCENT(100) , HEIGHT_PERCENT(25) ) options:NSStringDrawingDisableScreenFontSubstitution attributes:buildTypeAttributedDictionary];
+        buildTypeBoundRect.origin.x = 0;
+        buildTypeBoundRect.origin.y = HEIGHT_PERCENT(5);
+        buildTypeBoundRect.size.width = WIDTH_PERCENT(100);
+        
+        [buildType drawWithRect:buildTypeBoundRect options:NSStringDrawingUsesDeviceMetrics attributes:buildTypeAttributedDictionary context:nil];
+    }
     
     [image unlockFocus];
     
