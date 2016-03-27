@@ -8,31 +8,42 @@
 
 #import <Foundation/Foundation.h>
 #import "CWLSynthesizeSingleton.h"
+#import <AppKit/AppKit.h>
 
-static NSString * const kVersionArgumentKey             = @"--version:";
-static NSString * const kVersionTextColorArgumentKey    = @"--versionTextColor:";
-static NSString * const kBuildTypeArgumentKey           = @"--buildType:";
-static NSString * const kBuildTypeTextColorArgumentKey  = @"--buildTypeTextColor:";
-static NSString * const kSourceImagePathKey             = @"--sourceImagePath:";
-static NSString * const kTargetDirPathKey               = @"--targetDirPath:";
-static NSString * const kOutputImageNameKey             = @"--outputImageName:";
-static NSString * const kOutputImageWidthKey            = @"--outputImageWidth:";
-static NSString * const kOutputImageHeightKey           = @"--outputImageHeight:";
-static NSString * const kBuildTypePositionCenterKey     = @"--buildTypePositionCenter:";
+static NSString * const kTextArgumentKey                = @"-text";
+static NSString * const kTextColorArgumentKey           = @"-textColor";
+static NSString * const kTextSizeArgumentKey            = @"-textSize";
+static NSString * const kTextPositionArgumentKey        = @"-textPosition";
+static NSString * const kTextAligmentArgumentKey        = @"-textAligment";
+static NSString * const kTextXPaddingArgumentKey        = @"-textXPadding";
+static NSString * const kTextYPaddingArgumentKey        = @"-textYPadding";
 
+static NSString * const kSourcePathArgumentKey          = @"-sourcePath";
+static NSString * const kResultPathArgumentKey          = @"-resultPath";
+
+static NSString * const kResultHeightArgumentKey        = @"-resultHeight";
+static NSString * const kResultWidthArgumentKey         = @"-resultWidth";
+
+typedef NS_ENUM(NSUInteger, TextPosition) {
+    TextPositionTop,
+    TextPositionMiddle,
+    TextPositionBottom,
+};
 @interface SettingsManager : NSObject
 
-@property (nonatomic, strong) NSString *version;
-@property (nonatomic, strong) NSString *versionTextColor;
-@property (nonatomic, strong) NSString *buildType;
-@property (nonatomic, strong) NSString *buildTypeTextColor;
-@property (nonatomic, strong) NSString *sourceImagePath;
-@property (nonatomic, strong) NSString *targetDirPath;
-@property (nonatomic, strong) NSString *outputImageName;
-@property (nonatomic, strong) NSString *outputImageWidth;
-@property (nonatomic, strong) NSString *outputImageHeight;
-@property (nonatomic) BOOL buildTypePositionCenter;
 @property (nonatomic, strong) NSString *applicationPath;
+
+@property (nonatomic, strong) NSString *text;
+@property (nonatomic, strong) NSColor *textColor;
+@property (nonatomic) CGFloat textSize;
+@property (nonatomic) TextPosition textPosition;
+@property (nonatomic) NSTextAlignment textAligment;
+@property (nonatomic) CGFloat textXPadding;
+@property (nonatomic) CGFloat textYPadding;
+
+@property (nonatomic, strong) NSString *sourcePath;
+@property (nonatomic, strong) NSString *resultPath;
+@property (nonatomic) CGSize resultSize;
 
 CWL_DECLARE_SINGLETON_FOR_CLASS(SettingsManager);
 

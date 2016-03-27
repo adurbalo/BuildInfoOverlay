@@ -33,7 +33,7 @@ int main(int argc, const char * argv[])
             return EXIT_FAILURE;
         }
         
-        [[ImageProcessingManager sharedImageProcessingManager] generateImages];
+        [[ImageProcessingManager sharedImageProcessingManager] generateImage];
     
         return EXIT_SUCCESS;
     }

@@ -7,7 +7,6 @@
 //
 
 #import "ImageProcessingManager.h"
-#import <AppKit/AppKit.h>
 #import "SettingsManager.h"
 
 @interface ImageProcessingManager ()
@@ -20,34 +19,19 @@
 
 #define WIDTH_PERCENT(x) roundf(_percentWidth * (x))
 #define HEIGHT_PERCENT(x) roundf(_percentHeight * (x))
+#define FULL_WIDTH WIDTH_PERCENT(100)
+#define FULL_HEIGHT HEIGHT_PERCENT(100)
 
 @implementation ImageProcessingManager
 
 CWL_SYNTHESIZE_SINGLETON_FOR_CLASS(ImageProcessingManager);
 
-+ (NSColor *)colorFromHexadecimalValue:(NSString *)hex {
-    
-    if ([hex hasPrefix:@"#"]) {
-        hex = [hex substringWithRange:NSMakeRange(1, [hex length] - 1)];
-    }
-    
-    unsigned int colorCode = 0;
-    
-    if (hex) {
-        NSScanner *scanner = [NSScanner scannerWithString:hex];
-        (void)[scanner scanHexInt:&colorCode];
-    }
-    
-    return [NSColor colorWithDeviceRed:((colorCode>>16)&0xFF)/255.0 green:((colorCode>>8)&0xFF)/255.0 blue:((colorCode)&0xFF)/255.0 alpha:1.0];
-}
-
-- (void)generateImages
+- (void)generateImage
 {
     SettingsManager *settingsManager = [SettingsManager sharedSettingsManager];
     
-    NSImage *sourceImage = [[NSImage alloc] initWithContentsOfFile:settingsManager.sourceImagePath];
-    
-    [self saveImage:sourceImage withName:settingsManager.outputImageName andSize:NSMakeSize([settingsManager.outputImageWidth floatValue], [settingsManager.outputImageHeight floatValue])];
+    NSImage *sourceImage = [[NSImage alloc] initWithContentsOfFile:settingsManager.sourcePath];
+    [self saveGeneratedImageFromSource:sourceImage];
 }
 
 - (void)calculateSizesPercentsForImage:(NSImage*)image
@@ -56,80 +40,29 @@ CWL_SYNTHESIZE_SINGLETON_FOR_CLASS(ImageProcessingManager);
     _percentHeight = image.size.height/100.f;
 }
 
-- (NSImage*)preparedTargetImage:(NSImage*)source
+- (void)saveGeneratedImageFromSource:(NSImage*)source
 {
-    NSString *version = [[SettingsManager sharedSettingsManager] version];
-    NSString *buildType = [[SettingsManager sharedSettingsManager] buildType];
-    
-    NSImage *image = [source copy];
-    
-    [image lockFocus];
-    
-    [self calculateSizesPercentsForImage:image];
-    
-    NSColor *versionTextColor = [ImageProcessingManager colorFromHexadecimalValue:[[SettingsManager sharedSettingsManager] versionTextColor]];
-    if (!versionTextColor) {
-        versionTextColor = [NSColor whiteColor];
-    }
-    
-    //Draw version
-    NSDictionary *versionAttributesDictionary = @{
-                                                  NSForegroundColorAttributeName : versionTextColor,
-                                                  NSFontAttributeName : [NSFont systemFontOfSize:HEIGHT_PERCENT(10)]
-                                                  };
-    
-    NSRect versionBoundRect = [version boundingRectWithSize:NSMakeSize( WIDTH_PERCENT(100) , HEIGHT_PERCENT(15) ) options:NSStringDrawingDisableScreenFontSubstitution attributes:versionAttributesDictionary];
-    versionBoundRect.origin.x = WIDTH_PERCENT(10); // For central position use this code -> (WIDTH_PERCENT(100) - versionBoundRect.size.width)/2;
-    versionBoundRect.origin.y = HEIGHT_PERCENT(85);
-    
-    [version drawWithRect:versionBoundRect options:NSStringDrawingDisableScreenFontSubstitution attributes:versionAttributesDictionary context:nil];
-    
-    
-    //Draw build type
-    NSMutableParagraphStyle *paragrapStyle = [[NSMutableParagraphStyle alloc] init];
-    paragrapStyle.alignment = NSCenterTextAlignment;
-    
-    NSColor *buildTypeTextColor = [ImageProcessingManager colorFromHexadecimalValue:[[SettingsManager sharedSettingsManager] buildTypeTextColor]];
-    if (!buildTypeTextColor) {
-        buildTypeTextColor = [NSColor redColor];
-    }
-    
-    NSDictionary *buildTypeAttributedDictionary = @{
-                                                    NSForegroundColorAttributeName : buildTypeTextColor,
-                                                    NSFontAttributeName : [NSFont boldSystemFontOfSize:HEIGHT_PERCENT(20)],
-                                                    NSParagraphStyleAttributeName : paragrapStyle
-                                                    };
-    
-    if ([[SettingsManager sharedSettingsManager] buildTypePositionCenter]) {
-        
-        NSMutableParagraphStyle *style = [[NSParagraphStyle defaultParagraphStyle] mutableCopy];
-        style.alignment = NSTextAlignmentCenter;
-        style.lineBreakMode = NSLineBreakByWordWrapping;
-        
-        NSMutableDictionary *attr = [NSMutableDictionary dictionaryWithDictionary:buildTypeAttributedDictionary];
-        [attr setObject:style forKey:NSParagraphStyleAttributeName];
-        
-        NSRect textRect = [buildType boundingRectWithSize:NSMakeSize( WIDTH_PERCENT(100) , HEIGHT_PERCENT(100) )
-                                                  options:NSStringDrawingUsesLineFragmentOrigin
-                                               attributes:attr];
-        textRect.origin.x = 0;
-        textRect.size.width = WIDTH_PERCENT(100);
-        textRect.origin.y = 0;
-        
-        [buildType drawInRect:textRect withAttributes:attr];
-        
+    CGSize size = CGSizeZero;
+ 
+    if (CGSizeEqualToSize([[SettingsManager sharedSettingsManager] resultSize], CGSizeZero)) {
+        size = source.size;
     } else {
-        NSRect buildTypeBoundRect = [version boundingRectWithSize:NSMakeSize( WIDTH_PERCENT(100) , HEIGHT_PERCENT(25) ) options:NSStringDrawingDisableScreenFontSubstitution attributes:buildTypeAttributedDictionary];
-        buildTypeBoundRect.origin.x = 0;
-        buildTypeBoundRect.origin.y = HEIGHT_PERCENT(5);
-        buildTypeBoundRect.size.width = WIDTH_PERCENT(100);
-        
-        [buildType drawWithRect:buildTypeBoundRect options:NSStringDrawingUsesDeviceMetrics attributes:buildTypeAttributedDictionary context:nil];
+        size = [[SettingsManager sharedSettingsManager] resultSize];
     }
     
-    [image unlockFocus];
+    NSImage *sourceImage = [self resizeImage:source size:size];
+    sourceImage = [self preparedTargetImage:sourceImage];
+
+    NSData *imageData = [sourceImage TIFFRepresentation];
+    NSBitmapImageRep *imageRep = [NSBitmapImageRep imageRepWithData:imageData];
+    NSDictionary *properties = @{@(1.0) : NSImageCompressionFactor};
+    imageData = [imageRep representationUsingType:NSPNGFileType properties:properties];
     
-    return image;
+    NSString *resultPath = [[SettingsManager sharedSettingsManager] resultPath];
+    
+    if(![imageData writeToFile:resultPath atomically:NO]) {
+        NSLog(@"Error during writing file to path: %@", resultPath);
+    }
 }
 
 - (NSImage*)resizeImage:(NSImage*)sourceImage size:(NSSize)size
@@ -152,28 +85,84 @@ CWL_SYNTHESIZE_SINGLETON_FOR_CLASS(ImageProcessingManager);
     return targetImage;
 }
 
-- (void)saveImage:(NSImage*)source withName:(NSString*)imageName andSize:(NSSize)size
+- (NSImage*)preparedTargetImage:(NSImage*)source
 {
-    NSImage *sourceImage = [self resizeImage:source size:size];
-    sourceImage = [self preparedTargetImage:sourceImage];
-
-    NSData *imageData = [sourceImage TIFFRepresentation];
-    NSBitmapImageRep *imageRep = [NSBitmapImageRep imageRepWithData:imageData];
-    NSDictionary *properties = @{@(1.0) : NSImageCompressionFactor};
-    imageData = [imageRep representationUsingType:NSPNGFileType properties:properties];
+    NSImage *image = [source copy];
     
-    NSString *targetDirPath = [[SettingsManager sharedSettingsManager] targetDirPath];
+    [image lockFocus];
     
-    BOOL isDir;
-    BOOL exists = [[NSFileManager defaultManager] fileExistsAtPath:targetDirPath isDirectory:&isDir];
-    if (!exists || !isDir) {
-        NSLog(@"Path doesn't exist: %@", targetDirPath);
-        return;
+    [self calculateSizesPercentsForImage:image];
+    
+    SettingsManager *settings = [SettingsManager sharedSettingsManager];
+    
+    NSString *text = settings.text;
+    
+    NSColor *textColor = settings.textColor;
+    if (!textColor) {
+        textColor = [NSColor whiteColor];
     }
     
-    NSString *targetFilePath = [targetDirPath stringByAppendingPathComponent:imageName];
+    CGFloat textSize = settings.textSize;
+    if (textSize == 0) {
+        textSize = HEIGHT_PERCENT(10);
+    } else {
+        textSize = HEIGHT_PERCENT(textSize);
+    }
     
-    [imageData writeToFile:targetFilePath atomically:NO];
+    NSMutableParagraphStyle *paragrapStyle = [[NSMutableParagraphStyle alloc] init];
+    paragrapStyle.alignment = settings.textAligment;
+    paragrapStyle.lineBreakMode = NSLineBreakByWordWrapping;
+    
+    NSFont *font = [NSFont systemFontOfSize:textSize];
+    
+    //Draw version
+    NSDictionary *attributesDictionary = @{
+                                           NSForegroundColorAttributeName : textColor,
+                                           NSFontAttributeName : font,
+                                           NSParagraphStyleAttributeName : paragrapStyle
+                                           };
+    
+    NSStringDrawingOptions options =  NSStringDrawingUsesLineFragmentOrigin | NSStringDrawingUsesFontLeading ;
+    
+    NSRect rect = [text boundingRectWithSize:NSMakeSize( FULL_WIDTH - WIDTH_PERCENT(2*settings.textXPadding) , FULL_HEIGHT - HEIGHT_PERCENT(2*settings.textYPadding) )
+                                     options:options
+                                  attributes:attributesDictionary];
+    
+    CGFloat y = 0;
+    CGFloat height = CGRectGetHeight(rect);
+    
+    switch (settings.textPosition) {
+        case TextPositionTop:
+        {
+            y = FULL_HEIGHT - height - HEIGHT_PERCENT(settings.textYPadding);
+        }
+            break;
+        case TextPositionMiddle:
+        {
+            y = (FULL_HEIGHT - height)/2;
+            break;
+        }
+        case TextPositionBottom:
+        {
+            y = HEIGHT_PERCENT(settings.textYPadding);
+            break;
+        }
+        default:
+            break;
+    }
+    
+    rect.origin.x = WIDTH_PERCENT(settings.textXPadding);
+    rect.origin.y = y;
+    rect.size.width = FULL_WIDTH - WIDTH_PERCENT(2*settings.textXPadding);
+    
+    [text drawWithRect:rect
+               options:options
+            attributes:attributesDictionary
+               context:nil];
+
+    [image unlockFocus];
+    
+    return image;
 }
 
 @end

@@ -13,6 +13,6 @@
 
 CWL_DECLARE_SINGLETON_FOR_CLASS(ImageProcessingManager);
 
-- (void)generateImages;
+- (void)generateImage;
 
 @end
