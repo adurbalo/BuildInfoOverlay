@@ -51,7 +51,11 @@ CWL_SYNTHESIZE_SINGLETON_FOR_CLASS(ImageProcessingManager);
     }
     
     NSImage *sourceImage = [self resizeImage:source size:size];
-    sourceImage = [self preparedTargetImage:sourceImage];
+    
+    SettingsManager *settings = [SettingsManager sharedSettingsManager];
+    if (settings.text.length > 0) {
+        sourceImage = [self drawTextInImage:sourceImage];
+    }
 
     NSData *imageData = [sourceImage TIFFRepresentation];
     NSBitmapImageRep *imageRep = [NSBitmapImageRep imageRepWithData:imageData];
@@ -85,7 +89,7 @@ CWL_SYNTHESIZE_SINGLETON_FOR_CLASS(ImageProcessingManager);
     return targetImage;
 }
 
-- (NSImage*)preparedTargetImage:(NSImage*)source
+- (NSImage*)drawTextInImage:(NSImage*)source
 {
     NSImage *image = [source copy];
     

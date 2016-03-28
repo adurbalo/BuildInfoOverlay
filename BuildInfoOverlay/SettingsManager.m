@@ -100,12 +100,7 @@ CWL_SYNTHESIZE_SINGLETON_FOR_CLASS(SettingsManager);
     
     NSError *error = nil;
     
-    self.text = [self receiveRequiredArgumentByKey:kTextArgumentKey fromArgumentList:args withError:&error];
-    if (error) {
-        NSLog(@"Error: %@", error.localizedDescription);
-        [self showAvailableArguments];
-        return NO;
-    }
+    self.text = [self receiveOptionalArgumentByKey:kTextArgumentKey fromArgumentList:args];
     
     self.textColor = [self parseTextColorArgument:[self receiveOptionalArgumentByKey:kTextColorArgumentKey fromArgumentList:args] withError:&error];
     if (error) {
