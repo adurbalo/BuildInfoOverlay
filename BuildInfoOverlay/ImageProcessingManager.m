@@ -43,7 +43,7 @@ CWL_SYNTHESIZE_SINGLETON_FOR_CLASS(ImageProcessingManager);
 - (void)saveGeneratedImageFromSource:(NSImage*)source
 {
     CGSize size = CGSizeZero;
- 
+    
     if (CGSizeEqualToSize([[SettingsManager sharedSettingsManager] resultSize], CGSizeZero)) {
         size = source.size;
     } else {
@@ -56,7 +56,7 @@ CWL_SYNTHESIZE_SINGLETON_FOR_CLASS(ImageProcessingManager);
     if (settings.text.length > 0) {
         sourceImage = [self drawTextInImage:sourceImage];
     }
-
+    
     NSData *imageData = [sourceImage TIFFRepresentation];
     NSBitmapImageRep *imageRep = [NSBitmapImageRep imageRepWithData:imageData];
     NSDictionary *properties = @{@(1.0) : NSImageCompressionFactor};
@@ -71,31 +71,45 @@ CWL_SYNTHESIZE_SINGLETON_FOR_CLASS(ImageProcessingManager);
 
 - (NSImage*)resizeImage:(NSImage*)sourceImage size:(NSSize)size
 {
-    NSRect targetFrame = NSMakeRect(0, 0, size.width, size.height);
-    NSImage*  targetImage = [[NSImage alloc] initWithSize:size];
-    
-    [targetImage lockFocus];
-    
-    [sourceImage drawInRect:targetFrame
-                   fromRect:NSZeroRect       //portion of source image to draw
-                  operation:NSCompositeCopy  //compositing operation
-                   fraction:1.0              //alpha (transparency) value
-             respectFlipped:YES              //coordinate system
-                      hints:@{NSImageHintInterpolation:
-                                  [NSNumber numberWithInt:NSImageInterpolationHigh]}];
-    
-    [targetImage unlockFocus];
-    
-    return targetImage;
+    CGImageRef cgRef = [sourceImage CGImageForProposedRect:NULL
+                                                   context:nil
+                                                     hints:nil];
+    NSBitmapImageRep *newRep = [[NSBitmapImageRep alloc] initWithCGImage:cgRef];
+    [newRep setSize:size];   // if you want the same resolution
+    return [[NSImage alloc] initWithCGImage:[newRep CGImage] size:size];
 }
 
-- (NSImage*)drawTextInImage:(NSImage*)source
+- (NSImage *)drawTextInImage:(NSImage*)sourceImage
 {
-    NSImage *image = [source copy];
+    NSSize imgSize = [sourceImage size];
+    CGImageRef cgRef = [sourceImage CGImageForProposedRect:NULL
+                                                   context:nil
+                                                     hints:nil];
     
-    [image lockFocus];
+    NSBitmapImageRep *offscreenRep = [[NSBitmapImageRep alloc]
+                                      initWithBitmapDataPlanes:NULL
+                                      pixelsWide:imgSize.width
+                                      pixelsHigh:imgSize.height
+                                      bitsPerSample:8
+                                      samplesPerPixel:4
+                                      hasAlpha:YES
+                                      isPlanar:NO
+                                      colorSpaceName:NSDeviceRGBColorSpace
+                                      bitmapFormat:NSAlphaFirstBitmapFormat
+                                      bytesPerRow:0
+                                      bitsPerPixel:0];
     
-    [self calculateSizesPercentsForImage:image];
+    // set offscreen context
+    NSGraphicsContext *g = [NSGraphicsContext graphicsContextWithBitmapImageRep:offscreenRep];
+    [NSGraphicsContext saveGraphicsState];
+    [NSGraphicsContext setCurrentContext:g];
+    
+    CGContextRef ctx = [g graphicsPort];
+    NSRect imgRect = NSMakeRect(0, 0, imgSize.width, imgSize.height);
+    CGContextDrawImage(ctx, imgRect, cgRef);
+    
+    
+    [self calculateSizesPercentsForImage:sourceImage];
     
     SettingsManager *settings = [SettingsManager sharedSettingsManager];
     
@@ -163,10 +177,12 @@ CWL_SYNTHESIZE_SINGLETON_FOR_CLASS(ImageProcessingManager);
                options:options
             attributes:attributesDictionary
                context:nil];
-
-    [image unlockFocus];
     
+    // create an NSImage and add the rep to it
+    NSImage *image = [[NSImage alloc] initWithSize:imgSize];
+    [image addRepresentation:offscreenRep];
     return image;
 }
 
 @end
+
