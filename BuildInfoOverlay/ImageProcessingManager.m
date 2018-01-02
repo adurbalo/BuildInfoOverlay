@@ -74,9 +74,33 @@ CWL_SYNTHESIZE_SINGLETON_FOR_CLASS(ImageProcessingManager);
     CGImageRef cgRef = [sourceImage CGImageForProposedRect:NULL
                                                    context:nil
                                                      hints:nil];
-    NSBitmapImageRep *newRep = [[NSBitmapImageRep alloc] initWithCGImage:cgRef];
-    [newRep setSize:size];   // if you want the same resolution
-    return [[NSImage alloc] initWithCGImage:[newRep CGImage] size:size];
+    
+    NSBitmapImageRep *offscreenRep = [[NSBitmapImageRep alloc]
+                                      initWithBitmapDataPlanes:NULL
+                                      pixelsWide:size.width
+                                      pixelsHigh:size.height
+                                      bitsPerSample:8
+                                      samplesPerPixel:4
+                                      hasAlpha:YES
+                                      isPlanar:NO
+                                      colorSpaceName:NSDeviceRGBColorSpace
+                                      bitmapFormat:NSAlphaFirstBitmapFormat
+                                      bytesPerRow:0
+                                      bitsPerPixel:0];
+    
+    // set offscreen context
+    NSGraphicsContext *g = [NSGraphicsContext graphicsContextWithBitmapImageRep:offscreenRep];
+    [NSGraphicsContext saveGraphicsState];
+    [NSGraphicsContext setCurrentContext:g];
+    
+    CGContextRef ctx = [g graphicsPort];
+    NSRect imgRect = NSMakeRect(0, 0, size.width, size.height);
+    CGContextDrawImage(ctx, imgRect, cgRef);
+    
+    // create an NSImage and add the rep to it
+    NSImage *image = [[NSImage alloc] initWithSize:size];
+    [image addRepresentation:offscreenRep];
+    return image;
 }
 
 - (NSImage *)drawTextInImage:(NSImage*)sourceImage
