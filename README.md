@@ -19,6 +19,16 @@ Available arguments:
 Example
 ================
 
+Run script
+Schell /bin/sh
+
+```bash
+cd ${SRCROOT}/PrebuildScripts/
+./PreBuldConfigure.sh "${SRCROOT}" "${CONFIGURATION}" "DEV"
+```
+
+PreBuldConfigure.sh
+
 ```bash
 srcroot=$1
 configuration=$2
